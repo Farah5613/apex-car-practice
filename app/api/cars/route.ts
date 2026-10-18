@@ -16,14 +16,18 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    
-    // اگر در دیتابیس Supabase فیلد id به صورت خودکار ساخته می‌شود، نیازی به ارسال دستی _id نیست
+    console.log("Request Body:", body); // چاپ داده‌های ارسالی
+
     const { data, error } = await db.from('cars').insert([body]).select();
 
-    if (error) throw error;
+    if (error) {
+      console.error("Supabase Error Detail:", error); // چاپ خطای دقیق Supabase
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
     return NextResponse.json({ success: true, car: data });
   } catch (error: any) {
-    console.error("Supabase Insert Error:", error);
+    console.error("Server Catch Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
