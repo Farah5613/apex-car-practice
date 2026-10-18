@@ -1,5 +1,6 @@
-import Nano from 'nano';
+import { createClient } from '@supabase/supabase-js'
 
-const nano = Nano('http://admin:secret123@localhost:5984');
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-export const db = nano.db.use('kanban_test');
+export const db = createClient(supabaseUrl, supabaseAnonKey)
