@@ -18,14 +18,17 @@ export async function GET() {
 }
 
 // ثبت خودروی جدید
+// ثبت خودروی جدید
 export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    // پاک کردن id و _id برای جلوگیری از خطای duplicate key در Supabase
-    const carData = { ...body };
-    delete carData.id;
-    delete carData._id;
+    // استخراج فقط فیلدهای معتبر که ستون‌های جدول Supabase هستند
+    const carData = {
+      title: body.title,
+      image: body.image,
+      description: body.description,
+    };
 
     const { data, error } = await db.from('cars').insert([carData]).select();
 
