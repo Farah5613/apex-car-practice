@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db } from '../../../lib/couchdb'; // (یا مسیر صحیح ایمپورت دیتابیس)
+import { db } from '../../../lib/couchdb';
 
 // دریافت یک خودرو با شناسه مشخص
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
@@ -19,16 +19,20 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
   try {
     const params = await context.params;
     const body = await request.json();
+    
+    // حذف id از بدنه آپدیت برای جلوگیری از تداخل
+    const { id, ...updateData } = body;
 
     const { data, error } = await db
       .from('cars')
-      .update(body)
+      .update(updateData)
       .eq('id', params.id)
       .select();
 
     if (error) throw error;
     return NextResponse.json({ success: true, car: data });
   } catch (error: any) {
+    console.error("PUT Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
