@@ -1,14 +1,19 @@
 import { NextResponse } from 'next/server';
 import { db } from '../../lib/couchdb';
 
-// دریافت لیست خودروها
+// دریافت لیست تمام خودروها
 export async function GET() {
   try {
-    const { data: cars, error } = await db.from('cars').select('*');
-    if (error) throw error;
-    return NextResponse.json(cars);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const { data, error } = await db.from('cars').select('*');
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json(data);
+  } catch (error: unknown) {
+    const err = error as Error;
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
 
@@ -16,18 +21,22 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    console.log("Request Body:", body); // چاپ داده‌های ارسالی
 
-    const { data, error } = await db.from('cars').insert([body]).select();
+    // پاک کردن id و _id برای جلوگیری از خطای duplicate key در Supabase
+    const carData = { ...body };
+    delete carData.id;
+    delete carData._id;
+
+    const { data, error } = await db.from('cars').insert([carData]).select();
 
     if (error) {
-      console.error("Supabase Error Detail:", error); // چاپ خطای دقیق Supabase
+      console.error("Supabase Error:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, car: data });
-  } catch (error: any) {
-    console.error("Server Catch Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const err = error as Error;
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
